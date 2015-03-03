@@ -4,8 +4,8 @@ import java.util.Random;
 
 public class ServerAllocation {
 
-	private ArrayList<Double> allocation;
-	private ArrayList<Double> virtualCpu;
+	private ArrayList<Double> time;
+	private ArrayList<Double> cpu;
 	private ArrayList<Double> memory;
 	private ArrayList<Double> disk;
 	
@@ -26,8 +26,8 @@ public class ServerAllocation {
 	private boolean constraintAvailable;
 	
 	public ServerAllocation(double availableCpu,double availableMem,double availableDisk) {
-		allocation=new ArrayList<Double>();
-		virtualCpu=new ArrayList<Double>();
+		time=new ArrayList<Double>();
+		cpu=new ArrayList<Double>();
 		memory=new ArrayList<Double>();
 		disk=new ArrayList<Double>();
 		totalCpuReq=0;
@@ -45,27 +45,29 @@ public class ServerAllocation {
 		
 	}
 	
-	public void addTask(double virtualTime, double cpu, double ram, double disk){
-		allocation.add(virtualTime/cpu);
-		virtualCpu.add(cpu);
+	public void addTask(double realTime, double cpu, double ram, double disk){
+		time.add(realTime);
+		this.cpu.add(cpu);
 		memory.add(ram);
 		this.disk.add(disk);
 		totalCpuReq+=cpu;
 		totalMemReq+=ram;
 		totalDiskReq+=disk;
+		constraintAvailable=false;
+		
 	}
 	
 	public void removeTask(int index){
-		allocation.remove(index);
-		totalCpuReq-=virtualCpu.get(index);
-		totalMemReq-=memory.get(index);
-		totalDiskReq-=disk.get(index);
-		virtualCpu.remove(index);
+		time.remove(index);
+		totalCpuReq-=cpu.remove(index);
+		totalMemReq-=memory.remove(index);
+		totalDiskReq-=disk.remove(index);
+		constraintAvailable=false;
 		
 	}
 
 	private void sort(){
-		quickSort(0,allocation.size()-1);
+		quickSort(0,time.size()-1);
 	}
 	
 	private void quickSort(int lower, int higher){
@@ -76,7 +78,7 @@ public class ServerAllocation {
         if (i==j || i>j)return;
       
         		int indexPivot=r.nextInt(higher-lower)+lower;
-        		double allocationPivot=allocation.get(indexPivot);
+        		double allocationPivot=time.get(indexPivot);
        
         // Divide into two arrays
         while (i <= j) {
@@ -86,10 +88,10 @@ public class ServerAllocation {
              * from right side which is less then the pivot value. Once the search
              * is done, then we exchange both numbers.
              */
-            while (allocation.get(i) < allocationPivot) {
+            while (time.get(i) < allocationPivot) {
                 i++;
             }
-            while (allocation.get(j)  > allocationPivot) {
+            while (time.get(j)  > allocationPivot) {
                 j--;
             }
             if (i <= j) {
@@ -107,16 +109,22 @@ public class ServerAllocation {
 	}
 	
 	private void exchangeNumbers(int i, int j){
-		Double temp=allocation.get(i);
-		allocation.set(i, allocation.get(j));
-		allocation.set(j,temp);
-		temp=virtualCpu.get(i);
-		virtualCpu.set(i, virtualCpu.get(j));
-		virtualCpu.set(j, temp);	
+		Double temp=time.get(i);
+		time.set(i, time.get(j));
+		time.set(j,temp);
+		temp=cpu.get(i);
+		cpu.set(i, cpu.get(j));
+		cpu.set(j, temp);
+		temp=memory.get(i);
+		memory.set(i, memory.get(j));
+		memory.set(j,temp);
+		temp=disk.get(i);
+		disk.set(i, disk.get(j));
+		disk.set(j,temp);
 	}
 	public void reset(){
-		allocation=new ArrayList<Double>();
-		virtualCpu=new ArrayList<Double>();
+		time=new ArrayList<Double>();
+		cpu=new ArrayList<Double>();
 		memory=new ArrayList<Double>();
 		disk=new ArrayList<Double>();
 		totalCpuReq=0;
@@ -137,29 +145,17 @@ public class ServerAllocation {
 		 * Se il totale di cpu richiesto è maggiore di uno, bisogna vedere fin quando lo rimane
 		 * e rimuovere via via i task che finiscono per liberare la cpu
 		 */
-		double offset=0;
-		double percentageCpuReq=totalCpuReq/serverCpu;
 		if(totalMemReq> serverMemory){
 			memoryConstraint=totalMemReq-serverMemory;
 		}
 		if(totalDiskReq> serverDisk){
-			memoryConstraint=totalDiskReq-serverDisk;
+			diskConstraint=totalDiskReq-serverDisk;
 		}
-		
-		
-		while(percentageCpuReq>1 && allocation.size()>0){
-			Double minTime=allocation.remove(0);
-			minTime-=offset;
-			offset+=minTime/totalCpuReq;
-			totalCpuReq-=virtualCpu.remove(0);
-			percentageCpuReq=totalCpuReq/serverCpu;
+		if(totalCpuReq > serverCpu){
+			cpuConstraint=totalCpuReq - serverCpu;
+			
 		}
-		cpuConstraint=offset;
-		double maxTime=0;
-		if(allocation.size()>0){
-			maxTime=(allocation.get(allocation.size()-1)-offset)*virtualCpu.get(virtualCpu.size()-1);
-		}
-		maxTime+=offset;
+		double maxTime=time.get(time.size()-1);;
 		constraintAvailable=true;
 		return maxTime;
 	}

@@ -133,7 +133,7 @@ public class Main extends NSGAII_main {
 		SolutionSet population = algorithm.execute();
 		long estimatedTime = System.currentTimeMillis() - initTime;
 		logger_.info("Total execution time: " + estimatedTime + "ms");
-		
+		population.printObjectivesToFile(outputPath+"FUNaaa");
 		NonDominatedSolutionList ndl = compact(population);
 		ndl.printFeasibleVAR(outputPath+"VAR");
 		logger_.info("Variables values have been written to file VAR");

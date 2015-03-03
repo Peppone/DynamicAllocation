@@ -123,7 +123,7 @@ public class VMProblem extends Problem{
 			constrObj =true;
 			minAusiliaryObj=false;
 			maxAusiliaryObj=false;
-			numberOfObjectives_= 2 + 3;
+			numberOfObjectives_+= 3;
 		}
 		
 	}
@@ -256,8 +256,6 @@ public class VMProblem extends Problem{
 		double minCpuUsage=Double.MAX_VALUE;
 		double minRamUsage=Double.MAX_VALUE;
 		double minDiskUsage=Double.MAX_VALUE;
-		
-		
 		for(int i=0; i< SERV_NUM; ++i){
 			cpu[i]=serverAllocation[i].getCpuRequest();
 			double time=serverAllocation[i].executionTime();
@@ -266,6 +264,7 @@ public class VMProblem extends Problem{
 			}
 			if(serverAllocation[i].getCpuConstraint()>0){
 				serverCPUconstraint+=serverAllocation[i].getCpuConstraint();
+			
 				violatedCPUconstraint++;
 			}
 			
@@ -289,13 +288,13 @@ public class VMProblem extends Problem{
 		*/	
 			/*
 			 * Constraint violation 
-			 */			
+			 */
 			if(cpu[i]>maxCPU[i]){
 				serverCPUconstraint+=cpu[i]-maxCPU[i];
 				cpu[i]=maxCPU[i];
-				violatedCPUconstraint++;				
+				violatedCPUconstraint++;
+				
 			}
-		
 			if(memory[i]>maxMEMORY[i]){
 				serverMEMconstraint+=memory[i]-maxMEMORY[i];
 				memory[i]=maxMEMORY[i];
