@@ -84,11 +84,17 @@ public class VMProblem extends Problem{
 			P_S_PEAK[i]=300;
 			P_S_IDLE[i]=100;
 			
+			/*valori
+			maxMEMORY[i]=8E9;
+			maxDISK[i]= 1e12;
+			maxCPU[i]=2e9;
+			fine valori*/
 			//VALORI TEMPORANEI
 			maxMEMORY[i]=100;
 			maxDISK[i]= 100;
 			maxCPU[i]=100;
-			//fine valori
+			//FINE VALORI
+			
 			serverAllocation[i]=new ServerAllocation(maxCPU[i],maxMEMORY[i],maxCPU[i]);
 			
 		}
@@ -141,9 +147,6 @@ public class VMProblem extends Problem{
 		
 		Variable[] var = solution.getDecisionVariables();
 		int varnum=var.length;
-		double cpu[]=new double [SERV_NUM];
-		double memory[] = new double [SERV_NUM];
-		double disk[]= new double [SERV_NUM];
 		double server_power_consumption = 0;
 		double switch_power_consumption=0;
 		double serverExecutionTime[]=new double [SERV_NUM];
@@ -170,16 +173,7 @@ public class VMProblem extends Problem{
 		{
 			int server = (int)((Int)var[i]).getValue();
 			VM current = vm.get(i);
-			/*
-			cpu[server]+=current.getCpu();
-			*/
-			
-			memory[server]+=current.getMemory();
-			disk[server]+=current.getDisk();
-			/*
-			serverExecutionTime[server]+=current.getMinimumExecutionTime()/current.getCpu();
-			/*/
-			serverAllocation[server].addTask(current.getMinimumExecutionTime(),current.getCpu(),current.getMemory(),current.getDisk());
+			serverAllocation[server].addTask(current.getTime(),current.getCpu(),current.getMemory(),current.getDisk());
 			
 			double currentBand=current.getBandwidth();
 			double serverBand=currentBand;
@@ -257,54 +251,28 @@ public class VMProblem extends Problem{
 		double minRamUsage=Double.MAX_VALUE;
 		double minDiskUsage=Double.MAX_VALUE;
 		for(int i=0; i< SERV_NUM; ++i){
-			cpu[i]=serverAllocation[i].getCpuRequest();
 			double time=serverAllocation[i].executionTime();
+			double currentCpu=serverAllocation[i].getTotalCpuRequest();
+			double currentMem=serverAllocation[i].getTotalMemRequest();
+			double currentDisk= serverAllocation[i].getTotalDiskRequest();
+			
 			if(time>maxExecutionTime){
 				maxExecutionTime=time;
 			}
+			//Start constraint
 			if(serverAllocation[i].getCpuConstraint()>0){
 				serverCPUconstraint+=serverAllocation[i].getCpuConstraint();
-			
 				violatedCPUconstraint++;
 			}
 			
-			/* SE SI CONSIDERA LA CPU, BISOGNA IN EQUAL MODO CONSIDERARE LE ALTRE RISORSE
-			if(cpu[i]>CPU[i]){
-				/*
-				 * Se viene allocata una cpu maggiore di quella richiesta, ad ogni VM verrà assegnata una porzione di
-				 * potenza di calcolo proporzionalmente minore pari a
-				 * CPU_PERCENTAGE / (CPU_REQUIRED) che corrisponde a
-				 *  1 / cpu[i];
-				 */
-			/*
-				
-				serverExecutionTime[i]*=cpu[i];
-				
-				serverCPUconstraint+=cpu[i]-1;
-				cpu[i]=1;
-			}
-			
-			
-		*/	
-			/*
-			 * Constraint violation 
-			 */
-			if(cpu[i]>maxCPU[i]){
-				serverCPUconstraint+=cpu[i]-maxCPU[i];
-				cpu[i]=maxCPU[i];
-				violatedCPUconstraint++;
-				
-			}
-			if(memory[i]>maxMEMORY[i]){
-				serverMEMconstraint+=memory[i]-maxMEMORY[i];
-				memory[i]=maxMEMORY[i];
+			if(serverAllocation[i].getMemConstraint()>0){
+				serverMEMconstraint+=serverAllocation[i].getMemConstraint();
 				violatedMEMconstraint++;
 			}
 			
-			if(disk[i]>maxDISK[i]){
-				serverDISKconstraint+=disk[i]-maxDISK[i];
-				disk[i]=maxDISK[i];
-				violatedDISKconstraint++;				
+			if(serverAllocation[i].getDiskConstraint()>0){
+				serverDISKconstraint+=serverAllocation[i].getDiskConstraint();
+				violatedDISKconstraint++;
 			}
 			//End constraint
 			
@@ -312,16 +280,16 @@ public class VMProblem extends Problem{
 			//MAX AUSILIARY
 			if (maxAusiliaryObj) {
 
-				if (cpu[i] > maxCpuUsage) {
-					maxCpuUsage = cpu[i];
+				if (currentCpu > maxCpuUsage) {
+					maxCpuUsage = currentCpu;
 				}
 
-				if (memory[i] > maxRamUsage) {
-					maxRamUsage = memory[i];
+				if (currentMem > maxRamUsage) {
+					maxRamUsage = currentMem ;
 				}
 
-				if (disk[i] > maxDiskUsage) {
-					maxDiskUsage = disk[i];
+				if (currentDisk > maxDiskUsage) {
+					maxDiskUsage = currentDisk;
 				}
 
 			}//END MAX AUSILIARY OBJ
@@ -330,16 +298,16 @@ public class VMProblem extends Problem{
 			//START MIN AUSILIARY OBJ
 			if (minAusiliaryObj) {
 
-				if (cpu[i] < minCpuUsage) {
-					minCpuUsage = cpu[i];
+				if (currentCpu < minCpuUsage) {
+					minCpuUsage = currentCpu;
 				}
 
-				if (memory[i] < minRamUsage) {
-					minRamUsage = memory[i];
+				if (currentMem  < minRamUsage) {
+					minRamUsage = currentMem ;
 				}
 
-				if (disk[i] < minDiskUsage) {
-					minDiskUsage = disk[i];
+				if (currentDisk < minDiskUsage) {
+					minDiskUsage = currentDisk;
 				}
 			}
 			//END MIN AUSILIARY OBJ
@@ -349,7 +317,7 @@ public class VMProblem extends Problem{
 				maxExecutionTime=serverExecutionTime[i];
 			}
 			////Fitness Function 2
-			server_power_consumption+= (P_S_PEAK[i] -P_S_IDLE[i])*cpu[i] + P_S_IDLE[i];
+			server_power_consumption+= (P_S_PEAK[i] -P_S_IDLE[i])*currentCpu/maxCPU[i] + P_S_IDLE[i];
 			////
 			
 			

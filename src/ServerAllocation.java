@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 
 
@@ -138,13 +139,7 @@ public class ServerAllocation {
 	
 	
 	public double executionTime(){
-		sort();
-		/* Viene ordinato l'array dei tempi reali (tempo virtuale / cpu virtuale)
-		 * subito dopo viene verificato quale task richiede più tempo e quello è il massimo
-		 * tempo di esecuzione del server.
-		 * Se il totale di cpu richiesto è maggiore di uno, bisogna vedere fin quando lo rimane
-		 * e rimuovere via via i task che finiscono per liberare la cpu
-		 */
+	
 		if(totalMemReq> serverMemory){
 			memoryConstraint=totalMemReq-serverMemory;
 		}
@@ -155,7 +150,9 @@ public class ServerAllocation {
 			cpuConstraint=totalCpuReq - serverCpu;
 			
 		}
-		double maxTime=time.get(time.size()-1);;
+		
+		double maxTime=0;
+		if(time.size()>0)maxTime=Collections.max(time);
 		constraintAvailable=true;
 		return maxTime;
 	}
@@ -175,8 +172,18 @@ public class ServerAllocation {
 		else return null;	
 	}
 	
-	public double getCpuRequest(){
-		return totalCpuReq;
+	public Double getTotalCpuRequest(){
+		if(constraintAvailable)return totalCpuReq;
+		else return null;	
+	}
+	public Double getTotalMemRequest(){
+		if(constraintAvailable)return totalMemReq;
+		else return null;	
+	}
+	
+	public Double getTotalDiskRequest(){
+		if(constraintAvailable)return totalDiskReq;
+		else return null;	
 	}
 
 }

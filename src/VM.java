@@ -5,10 +5,10 @@ public class VM {
 		private double memory;
 		private double disk;
 		private double bandwidth;
-		private double minExecTime;
+		private double time;
 
 		public VM(double time, double cpu, double mem, double disk, double band) {
-			minExecTime=time;
+			this.time=time;
 			this.cpu=cpu;
 			memory=mem;
 			this.disk=disk;
@@ -28,8 +28,8 @@ public class VM {
 		public double getBandwidth() {
 			return bandwidth;
 		}
-		public double getMinimumExecutionTime(){
-			return minExecTime;
+		public double getTime(){
+			return time;
 		}
 
 }
