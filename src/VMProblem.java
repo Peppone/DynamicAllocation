@@ -46,13 +46,12 @@ public class VMProblem extends Problem{
 	
 	private boolean minAusiliaryObj;
 	private boolean maxAusiliaryObj;
-	private boolean constrObj;
 	ArrayList<VM>vm;
 	ServerAllocation[] serverAllocation;
 	
 	public VMProblem(int task, int server, int servOnRack, int rackOnPod, ArrayList<VM> vm,int instance){
-		numberOfObjectives_ = 2;
-		numberOfConstraints_ = 2+3*server;
+		numberOfObjectives_ = 5;
+		numberOfConstraints_ =0;// 2+3*server;
 		problemName_ = "VMProblem";
 		solutionType_ = new IntSolutionType(this);
 		numberOfVariables_ = task;
@@ -111,27 +110,19 @@ public class VMProblem extends Problem{
 		violatedMEMconstraint=0;
 		violatedDISKconstraint=0;
 		
-		if(instance==0){
+		//if(instance==0){
 			minAusiliaryObj=false;
 			maxAusiliaryObj=false;
-			constrObj =false;
 			
-		}else if(instance==1){
+		/*}else if(instance==1){
 			minAusiliaryObj=false;
 			maxAusiliaryObj=true;
-			numberOfObjectives_= 2 + 3;
-			constrObj =false;
+			numberOfObjectives_+=3;
 		}else if(instance==2){
 			minAusiliaryObj=true;
 			maxAusiliaryObj=true;
-			numberOfObjectives_= 2 + 3 + 3;
-		}else if (instance == 3){
-			constrObj =true;
-			minAusiliaryObj=false;
-			maxAusiliaryObj=false;
-			numberOfObjectives_+= 3;
-		}
-		
+			numberOfObjectives_+= 3 + 3;
+		}*/		
 	}
 	
 	public int sgn(double x) {
@@ -240,7 +231,7 @@ public class VMProblem extends Problem{
 				+ agg_switch_power_consumption;
 		
 		
-		double maxExecutionTime=-1;
+		double maxExcess=-1;
 		double totalPowerConsumption=0;
 		
 		double maxCpuUsage=-1;
@@ -250,14 +241,15 @@ public class VMProblem extends Problem{
 		double minCpuUsage=Double.MAX_VALUE;
 		double minRamUsage=Double.MAX_VALUE;
 		double minDiskUsage=Double.MAX_VALUE;
+		int excess_counter=0;
 		for(int i=0; i< SERV_NUM; ++i){
-			double time=serverAllocation[i].executionTime();
+			double excess=serverAllocation[i].excess();
 			double currentCpu=serverAllocation[i].getTotalCpuRequest();
 			double currentMem=serverAllocation[i].getTotalMemRequest();
 			double currentDisk= serverAllocation[i].getTotalDiskRequest();
 			
-			if(time>maxExecutionTime){
-				maxExecutionTime=time;
+			if(excess>maxExcess){
+				maxExcess=excess;
 			}
 			//Start constraint
 			if(serverAllocation[i].getCpuConstraint()>0){
@@ -274,6 +266,8 @@ public class VMProblem extends Problem{
 				serverDISKconstraint+=serverAllocation[i].getDiskConstraint();
 				violatedDISKconstraint++;
 			}
+			if(serverAllocation[i].getCpuConstraint()>0 || serverAllocation[i].getMemConstraint()>0 || serverAllocation[i].getDiskConstraint()>0)
+				excess_counter++;
 			//End constraint
 			
 		//Objectives
@@ -313,9 +307,9 @@ public class VMProblem extends Problem{
 			//END MIN AUSILIARY OBJ
 
 			//// Fitness Function 1
-			if(maxExecutionTime < serverExecutionTime[i]){
+			/*if(maxExecutionTime < serverExecutionTime[i]){
 				maxExecutionTime=serverExecutionTime[i];
-			}
+			}*/
 			////Fitness Function 2
 			server_power_consumption+= (P_S_PEAK[i] -P_S_IDLE[i])*currentCpu/maxCPU[i] + P_S_IDLE[i];
 			////
@@ -327,9 +321,23 @@ public class VMProblem extends Problem{
 		
 		totalPowerConsumption=switch_power_consumption+server_power_consumption;
 		
-		solution.setObjective(0, maxExecutionTime);
-		solution.setObjective(1, totalPowerConsumption);
+		//solution.setObjective(0, maxExecutionTime);
+		
+		
+		solution.setObjective(0,maxExcess);
+		solution.setObjective(1,excess_counter);
 		int i=2;
+	
+		solution.setObjective(i, serverCPUconstraint);
+		i++;
+		solution.setObjective(i, serverMEMconstraint);
+		i++;
+		solution.setObjective(i, serverDISKconstraint);
+		i++;
+		
+		//double max=Math.max(Math.max(serverCPUconstraint, serverMEMconstraint),serverDISKconstraint);
+		
+		//solution.setObjective(0, totalPowerConsumption);
 		if(maxAusiliaryObj){
 				solution.setObjective(i, maxCpuUsage);
 				i++;
@@ -347,26 +355,21 @@ public class VMProblem extends Problem{
 			solution.setObjective(i, -minDiskUsage);
 			i++;
 		}
-		if(constrObj){
-			solution.setObjective(i, serverCPUconstraint);
-			i++;
-			solution.setObjective(i, serverMEMconstraint);
-			i++;
-			solution.setObjective(i, serverDISKconstraint);
-			i++;
+
 			
-		}
 	}
 		public void evaluateConstraints(Solution solution) throws JMException {
+			/*
 		int number_violated_constraints = 0;
 		number_violated_constraints+=violatedCPUconstraint+violatedDISKconstraint+violatedMEMconstraint;
-		if (serverBWconstraint > 0)
+/*	if (serverBWconstraint > 0)
 			number_violated_constraints++;
 		if (rackBWconstraint > 0)
-			number_violated_constraints++;
-		solution.setOverallConstraintViolation(rackBWconstraint
-				+ serverBWconstraint+serverMEMconstraint+serverCPUconstraint);
-		solution.setNumberOfViolatedConstraint(number_violated_constraints);
+			number_violated_constraints++;*/
+		solution.setOverallConstraintViolation(0/*rackBWconstraint
+				+ serverBWconstraint+serverMEMconstraint+serverCPUconstraint+serverDISKconstraint*/);
+		solution.setNumberOfViolatedConstraint(0/*number_violated_constraints*/);
+		
 				
 	}
 	

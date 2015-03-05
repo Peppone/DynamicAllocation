@@ -7,9 +7,12 @@ import java.util.Random;
 
 public class FileGenerator {
 	
+	public static void fileGeneration(int vm){
+		fileGeneration(vm,1,100,1,20, 10,40, 10,40,10, 40);
+	}
 	public static void fileGeneration(){
 		//fileGeneration(10,4,20,40,1e6,20e6, 0.1,0.4, 20e3,200e3,500e9, 1e9);
-		fileGeneration(10,1,100,1,20, 10,80, 10,40,10, 40);
+		fileGeneration(200,1,100,1,20, 10,40, 10,40,10, 40);
 	}
 	
 	public static void fileGeneration (int vm, double mintime, double maxtime, double minbw, double maxbw,
@@ -27,6 +30,8 @@ public class FileGenerator {
 		Random r = new Random();
 		File fileCPLEX = new File(name+".dat");
 		File fileJMETAL= new File(name+".txt");
+		File fileServer=new File("server.dat");
+		File fileVM=new File("vm.dat");
 		try {
 			if (fileCPLEX.exists()) {
 				fileCPLEX.delete();
@@ -34,8 +39,14 @@ public class FileGenerator {
 			if(fileJMETAL.exists()){
 				fileJMETAL.delete();
 			}
+			if(fileServer.exists()){
+				fileServer.delete();
+			}
 			FileWriter fwC = new FileWriter(fileCPLEX);
 			FileWriter fwJ = new FileWriter(fileJMETAL);
+			FileWriter fwCvm=new FileWriter(fileVM);
+			fwCvm.append("vm = " + vm+";");
+			fwCvm.close();
 			fwC.append(name+"=[ ");
 			for (int i = 0; i < vm; ++i) {
 
@@ -60,6 +71,8 @@ public class FileGenerator {
 	
 	
 	public static void main(String args[]){
-		fileGeneration();
+		if(args[0]!=null){
+			fileGeneration(Integer.parseInt(args[0]));
+		}else fileGeneration();
 	}
 }

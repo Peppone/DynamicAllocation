@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Random;
 
 
@@ -138,7 +137,7 @@ public class ServerAllocation {
 	}
 	
 	
-	public double executionTime(){
+	public double excess(){
 	
 		if(totalMemReq> serverMemory){
 			memoryConstraint=totalMemReq-serverMemory;
@@ -151,10 +150,10 @@ public class ServerAllocation {
 			
 		}
 		
-		double maxTime=0;
-		if(time.size()>0)maxTime=Collections.max(time);
+		double excess=Math.max(memoryConstraint,diskConstraint);
+		excess=Math.max(excess, cpuConstraint);
 		constraintAvailable=true;
-		return maxTime;
+		return excess;
 	}
 	
 	public Double getCpuConstraint(){

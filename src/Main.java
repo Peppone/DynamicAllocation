@@ -16,22 +16,23 @@ import jmetal.core.SolutionSet;
 import jmetal.core.Variable;
 import jmetal.metaheuristics.nsgaII.NSGAII;
 import jmetal.metaheuristics.nsgaII.NSGAII_main;
-import jmetal.operators.crossover.UniformCrossover;
 import jmetal.operators.mutation.MyRebalanceMutation;
 import jmetal.operators.selection.SelectionFactory;
 import jmetal.util.Configuration;
 import jmetal.util.JMException;
 import jmetal.util.NonDominatedSolutionList;
+import operator.TwoCutPointsCrossover;
 
 
 public class Main extends NSGAII_main {
 	
-
+	private static int popSizeFactor=1;
+	
 	public static Algorithm setup(Problem problem) {
 		Algorithm algorithm;
 		algorithm = new NSGAII(problem);
-		algorithm.setInputParameter("populationSize", 1000);
-		algorithm.setInputParameter("maxEvaluations", 25000);
+		algorithm.setInputParameter("populationSize",100*popSizeFactor);
+		algorithm.setInputParameter("maxEvaluations", 10000*problem.getNumberOfVariables()/*25000*/);
 		return algorithm;
 	}
 		
@@ -113,10 +114,10 @@ public class Main extends NSGAII_main {
 		ArrayList <VM> vm=createVMList(time, cpu, mem, disk,bw);
 		problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, type);
 		algorithm = Main.setup(problem);
-
+		popSizeFactor=(int)Math.pow(10,type);
 		parameters.put("crossoverProbability", 0.9);
-		crossover = new UniformCrossover(parameters);
-		//crossover= new TwoCutPointsCrossover (parameters);
+		//crossover = new UniformCrossover(parameters);
+		crossover= new TwoCutPointsCrossover (parameters);
 		parameters.put("mutationProbability",
 				1.0 / problem.getNumberOfVariables());
 		mutation = new MyRebalanceMutation(parameters);
@@ -139,6 +140,7 @@ public class Main extends NSGAII_main {
 		logger_.info("Variables values have been written to file VAR");
 		ndl.printFeasibleFUN(outputPath+"FUN");
 		logger_.info("Objectives values have been written to file FUN");
+		System.out.println("popolazione "+100*popSizeFactor+", exectime "+estimatedTime/1000.0);
 
 		
 	}
