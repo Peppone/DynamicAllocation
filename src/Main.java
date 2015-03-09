@@ -14,6 +14,7 @@ import jmetal.core.Problem;
 import jmetal.core.Solution;
 import jmetal.core.SolutionSet;
 import jmetal.core.Variable;
+import jmetal.experiments.Experiment;
 import jmetal.metaheuristics.nsgaII.NSGAII;
 import jmetal.metaheuristics.nsgaII.NSGAII_main;
 import jmetal.operators.mutation.MyRebalanceMutation;
@@ -115,6 +116,7 @@ public class Main extends NSGAII_main {
 		problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, type);
 		algorithm = Main.setup(problem);
 		popSizeFactor=(int)Math.pow(10,type);
+		
 		parameters.put("crossoverProbability", 0.9);
 		//crossover = new UniformCrossover(parameters);
 		crossover= new TwoCutPointsCrossover (parameters);
@@ -129,9 +131,24 @@ public class Main extends NSGAII_main {
 		algorithm.addOperator("crossover", crossover);
 		algorithm.addOperator("mutation", mutation);
 		algorithm.addOperator("selection", selection);
-
+		MyExperiment m=new MyExperiment();
+		
+		String [] algs=new String[1];
+		algs[0]="NSGAII";
+		m.algorithmNameList_=algs;
+		m.experimentBaseDirectory_="/home/peppone/workspace/JMetalVM/output/"+task;
+		m.paretoFrontDirectory_="/home/peppone/workspace/JMetalVM/output/"+task;
+		m.experimentName_="VMAllocation";
+		m.indicatorList_=new String [] { "HV" , "SPREAD" , "IGD" , "EPSILON" } ;
+		m.problemList_=new String[]{"VMProblem"};
+		m.paretoFrontFile_=new String[]{"FUN"};
+		m.independentRuns_=2;
+		m.generateRWilcoxonScripts(new String[]{"VMproblem"}, "1", m);
+		m.runCompleteExperiment();
+		
+		
 		long initTime = System.currentTimeMillis();
-		SolutionSet population = algorithm.execute();
+		/*SolutionSet population = algorithm.execute();
 		long estimatedTime = System.currentTimeMillis() - initTime;
 		logger_.info("Total execution time: " + estimatedTime + "ms");
 		population.printObjectivesToFile(outputPath+"FUNaaa");
@@ -141,7 +158,7 @@ public class Main extends NSGAII_main {
 		ndl.printFeasibleFUN(outputPath+"FUN");
 		logger_.info("Objectives values have been written to file FUN");
 		System.out.println("popolazione "+100*popSizeFactor+", exectime "+estimatedTime/1000.0);
-
+*/
 		
 	}
 
