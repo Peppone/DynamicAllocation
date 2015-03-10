@@ -14,15 +14,12 @@ import jmetal.core.Problem;
 import jmetal.core.Solution;
 import jmetal.core.SolutionSet;
 import jmetal.core.Variable;
-import jmetal.experiments.Experiment;
 import jmetal.metaheuristics.nsgaII.NSGAII;
 import jmetal.metaheuristics.nsgaII.NSGAII_main;
-import jmetal.operators.mutation.MyRebalanceMutation;
-import jmetal.operators.selection.SelectionFactory;
+import jmetal.qualityIndicator.QualityIndicator;
 import jmetal.util.Configuration;
 import jmetal.util.JMException;
 import jmetal.util.NonDominatedSolutionList;
-import operator.TwoCutPointsCrossover;
 
 
 public class Main extends NSGAII_main {
@@ -92,7 +89,7 @@ public class Main extends NSGAII_main {
 		Operator selection; // Selection operator
 		HashMap<String, Object> parameters = new HashMap<String, Object>();
 		
-		
+		QualityIndicator indicators;
 		
 		int task=Integer.parseInt(args[0]);
 		int server=Integer.parseInt(args[1]);
@@ -114,9 +111,16 @@ public class Main extends NSGAII_main {
 		double [] bw= readVector(args[8]);
 		ArrayList <VM> vm=createVMList(time, cpu, mem, disk,bw);
 		problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, type);
-		algorithm = Main.setup(problem);
+		indicators=new QualityIndicator(problem, outputPath+"FUN");
+		JVMSettings mySettings=new JVMSettings("VMProblem",problem);
+		//algorithm = Main.setup(problem);
 		popSizeFactor=(int)Math.pow(10,type);
+		algorithm = mySettings.configure();
+		algorithm.setInputParameter("populationSize",100*popSizeFactor);
+		algorithm.setInputParameter("maxEvaluations", 10000*problem.getNumberOfVariables()/*25000*/);
 		
+		
+		/*
 		parameters.put("crossoverProbability", 0.9);
 		//crossover = new UniformCrossover(parameters);
 		crossover= new TwoCutPointsCrossover (parameters);
@@ -130,7 +134,8 @@ public class Main extends NSGAII_main {
 
 		algorithm.addOperator("crossover", crossover);
 		algorithm.addOperator("mutation", mutation);
-		algorithm.addOperator("selection", selection);
+		algorithm.addOperator("selection", selection);*/
+		/*
 		MyExperiment m=new MyExperiment();
 		
 		String [] algs=new String[1];
@@ -146,9 +151,9 @@ public class Main extends NSGAII_main {
 		m.generateRWilcoxonScripts(new String[]{"VMproblem"}, "1", m);
 		m.runCompleteExperiment();
 		
-		
+		*/
 		long initTime = System.currentTimeMillis();
-		/*SolutionSet population = algorithm.execute();
+		SolutionSet population = algorithm.execute();
 		long estimatedTime = System.currentTimeMillis() - initTime;
 		logger_.info("Total execution time: " + estimatedTime + "ms");
 		population.printObjectivesToFile(outputPath+"FUNaaa");
@@ -156,9 +161,16 @@ public class Main extends NSGAII_main {
 		ndl.printFeasibleVAR(outputPath+"VAR");
 		logger_.info("Variables values have been written to file VAR");
 		ndl.printFeasibleFUN(outputPath+"FUN");
-		logger_.info("Objectives values have been written to file FUN");
+		logger_.info("Objectives values have been written to file FUN "+outputPath);
 		System.out.println("popolazione "+100*popSizeFactor+", exectime "+estimatedTime/1000.0);
-*/
+		if(indicators!=null){
+			logger_.info( "Quality indicators" ) ;
+			logger_.info( " Hypervolume : " + indicators.getHypervolume(population));
+			logger_.info ( "GD	: " + indicators.getGD(population));
+			logger_.info( "IGD: " + indicators.getIGD(population));
+			logger_.info ( " Spread	: " + indicators.getSpread(population));
+			logger_.info ("Epsilon: " + indicators.getHypervolume ( population ) ) ;
+		}
 		
 	}
 

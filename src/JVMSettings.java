@@ -13,6 +13,9 @@ import operator.TwoCutPointsCrossover;
 
 public class JVMSettings extends Settings {
 
+	
+	
+	
 	public JVMSettings(String problem,Problem p){
 		super(problem);
 		problem_=p;
@@ -33,6 +36,7 @@ public class JVMSettings extends Settings {
 		crossover= new TwoCutPointsCrossover (parameters);
 		parameters.put("mutationProbability",
 				1.0 / problem_.getNumberOfVariables());
+		parameters.put("serverNumber",((VMProblem)problem_).SERV_NUM);
 		mutation = new MyRebalanceMutation(parameters);
 
 		parameters = null;
@@ -42,7 +46,8 @@ public class JVMSettings extends Settings {
 		algorithm.addOperator("crossover", crossover);
 		algorithm.addOperator("mutation", mutation);
 		algorithm.addOperator("selection", selection);
-		
+		algorithm.setInputParameter("populationSize",100);
+		algorithm.setInputParameter("maxEvaluations", 10000*problem_.getNumberOfVariables()/*25000*/);
 		return algorithm;
 	}
 
