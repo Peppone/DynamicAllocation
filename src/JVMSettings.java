@@ -12,12 +12,13 @@ import operator.TwoCutPointsCrossover;
 
 
 public class JVMSettings extends Settings {
-
+	String algName;
 	
 	
 	
-	public JVMSettings(String problem,Problem p){
-		super(problem);
+	public JVMSettings(String alg,Problem p){
+		super(alg);
+		algName=alg;
 		problem_=p;
 		
 	}
@@ -31,23 +32,46 @@ public class JVMSettings extends Settings {
 		Operator selection; // Selection operator
 		HashMap<String, Object> parameters = new HashMap<String, Object>();
 		algorithm = new NSGAII ( problem_) ;
-		parameters.put("crossoverProbability", 0.9);
-		//crossover = new UniformCrossover(parameters);
-		crossover= new TwoCutPointsCrossover (parameters);
+		if(problem_==null){
+			System.out.println("NULL");
+		}
 		parameters.put("mutationProbability",
 				1.0 / problem_.getNumberOfVariables());
+	
 		parameters.put("serverNumber",((VMProblem)problem_).SERV_NUM);
-		mutation = new MyRebalanceMutation(parameters);
 
-		parameters = null;
+		parameters.put("crossoverProbability", 0.9);
+		int populationSize=100;
+		int evaluations=25000;
+		if(algName.compareTo("NSGA100")==0){
+			populationSize=100;
+		}else if(algName.compareTo("NSGA1000")==0){
+			populationSize=1000;
+		}else if(algName.compareTo("NSGAFIT")==0){
+			evaluations=25000;
+		}else if(algName.compareTo("NSGAVIT")==0){
+			evaluations=10000*problem_.getNumberOfVariables();
+		}		
+		else if(algName.compareTo("NSGA09")==0){
+			parameters.put("crossoverProbability", 0.9);
+			
+		}else if(algName.compareTo("NSGA095")==0){
+			parameters.put("crossoverProbability", 0.95);
+		}
+		else if(algName.compareTo("NSGA05")==0){
+			parameters.put("crossoverProbability", 0.5);
+		}
+		mutation = new MyRebalanceMutation(parameters);
+		algorithm.addOperator("mutation", mutation);
+		algorithm.setInputParameter("populationSize",populationSize);
+		algorithm.setInputParameter("maxEvaluations", evaluations);
+		//crossover = new UniformCrossover(parameters);
+		crossover= new TwoCutPointsCrossover (parameters);
+		algorithm.addOperator("crossover", crossover);
+		//parameters = null;
 		selection = SelectionFactory.getSelectionOperator("BinaryTournament",
 				parameters);
-
-		algorithm.addOperator("crossover", crossover);
-		algorithm.addOperator("mutation", mutation);
 		algorithm.addOperator("selection", selection);
-		algorithm.setInputParameter("populationSize",100);
-		algorithm.setInputParameter("maxEvaluations", 10000*problem_.getNumberOfVariables()/*25000*/);
 		return algorithm;
 	}
 
