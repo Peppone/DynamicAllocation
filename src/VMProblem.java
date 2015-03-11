@@ -110,11 +110,11 @@ public class VMProblem extends Problem{
 		violatedMEMconstraint=0;
 		violatedDISKconstraint=0;
 		
-		//if(instance==0){
+		if(instance==0){
 			minAusiliaryObj=false;
 			maxAusiliaryObj=false;
 			
-		/*}else if(instance==1){
+		}else if(instance==1){
 			minAusiliaryObj=false;
 			maxAusiliaryObj=true;
 			numberOfObjectives_+=3;
@@ -122,7 +122,7 @@ public class VMProblem extends Problem{
 			minAusiliaryObj=true;
 			maxAusiliaryObj=true;
 			numberOfObjectives_+= 3 + 3;
-		}*/		
+		}		
 	}
 	
 	public int sgn(double x) {

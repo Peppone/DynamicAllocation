@@ -31,10 +31,7 @@ public class JVMSettings extends Settings {
 		Operator mutation; // Mutation operator
 		Operator selection; // Selection operator
 		HashMap<String, Object> parameters = new HashMap<String, Object>();
-		algorithm = new NSGAII ( problem_) ;
-		if(problem_==null){
-			System.out.println("NULL");
-		}
+		algorithm = new NSGAII (problem_) ;
 		parameters.put("mutationProbability",
 				1.0 / problem_.getNumberOfVariables());
 	
