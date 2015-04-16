@@ -1,0 +1,8 @@
+#!bin/sh
+GNUPLOT="/home/peppone/workspace/JMetalVM/script/gnuplot"
+
+for i in `seq 1 3`;do
+	gnuplot $GNUPLOT/problem$i.gnuplot
+done
+	gnuplot $GNUPLOT/time.gnuplot
+	gnuplot $GNUPLOT/timeGA.gnuplot

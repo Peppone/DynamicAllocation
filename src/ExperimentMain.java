@@ -1,3 +1,5 @@
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,7 +15,7 @@ import jmetal.util.JMException;
 
 
 
-public class MyExperiment extends Experiment{
+public class ExperimentMain extends Experiment{
 //Problem problem;
 double[] time;
 double[] cpu;
@@ -70,14 +72,14 @@ public void problemSetup(String args[]) throws IOException{
 	public static void main(String args[]) throws JMException, IOException{
 		//TODO Actually timeFile is useless
 		
-		if(args.length<10){
-			System.err.println("Usage: program_name vm_num serv_num servOnRack rackOnPod timefile cpufile memfile diskfile bwfile numberOfExperiments");
+		if(args.length<11){
+			System.err.println("Usage: program_name vm_num serv_num servOnRack rackOnPod timefile cpufile memfile diskfile bwfile numberOfExperiments typeOfExperiments");
 			System.err.println("Number of args passed "+args.length);
 			return;
 		}
 		int numberOfIndipendentRuns=Integer.parseInt(args[9]);
 		MyExperiment me = new MyExperiment();
-		
+		int type=Integer.parseInt(args[10]);
 		HashMap<String, Object> parameters = new HashMap<String, Object>();
 		int task=Integer.parseInt(args[0]);
 		int server=Integer.parseInt(args[1]);
@@ -85,19 +87,27 @@ public void problemSetup(String args[]) throws IOException{
 		int rackPerPod=Integer.parseInt(args[3]);
 		me.experimentName_="VMProblem"+task+"."+server;
 		me.experimentBaseDirectory_="/home/peppone/workspace/JMetalVM/output";
-		me.algorithmNameList_= new String[]{"NSGA100","NSGA1000","NSGAVIT", "NSGA09", "NSGA095","NSGA05"};
+		String algorithm="";
+		switch(type){
+		case 0: algorithm="NSGA100"; break;
+		case 1: algorithm="NSGA1000"; break;
+		case 2: algorithm="NSGAVIT"; break;
+		case 3: algorithm="NSGA09"; break;
+		case 4: algorithm="NSGA095"; break;
+		case 5: algorithm="NSGA05"; break;
+		default: System.err.println("Type "+type+" not found. Setting to default parameter");
+				algorithm="NSGA100";
+		}
+		me.algorithmNameList_= new String[]{algorithm};
 		me.problemList_=new String [3];
 		for(int i=0;i<me.problemList_.length;++i){
 			me.problemList_[i]="VMProblem"+i+"."+task+"."+server;
 		}
-		me.paretoFrontDirectory_="/home/peppone/workspace/JMetalVM/output";
+		String outputDir="/home/peppone/workspace/JMetalVM/output";
+		me.paretoFrontDirectory_=outputDir;
 		me.paretoFrontFile_=new String[]{"FUN0","FUN1","FUN2"};
 		me.indicatorList_=new String[]{"HV" , "SPREAD" , "IGD" , "EPSILON"};
 		me.problemSetup(args);
-		//JVMSettings []settings=new JVMSettings[me.algorithmNameList_.length];
-		//Logger logger_ = Configuration.logger_;
-		//FileHandler fileHandler_ = new FileHandler(outputPath+"VMProblem.log");
-		//logger_.addHandler(fileHandler_);
 		parameters.put("serverNumber", server);
 		//me.algorithmSettings_=settings;
 		me.independentRuns_=numberOfIndipendentRuns;
@@ -110,7 +120,10 @@ public void problemSetup(String args[]) throws IOException{
 		FileHandler fileHandler_ = new FileHandler("VMProblem"+task+"."+server);
 		logger_.info("Total execution time: " + (double)finishTime/1e9 + "s");
 		logger_.info("Avg execution time per instance " + (double)finishTime/me.independentRuns_*1e9 + "s");
-		
+		FileWriter results = new FileWriter(new File (outputDir+"/time"+type+"."+task+"."+server+".txt"));
+		results.append("Total Time[s]\t"+(double)finishTime/1e9+"\n");
+		results.append("Avg Time[s]\t"+(double)finishTime/me.independentRuns_*1e9+"\n");
+		results.close();
 		me.generateQualityIndicators();
 		me.generateLatexTables();
 		int rows;
