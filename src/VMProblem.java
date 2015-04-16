@@ -21,7 +21,6 @@ public class VMProblem extends Problem{
 	private double P_AGG_PEAK= 2500; 					// Peak power of an aggregation switch [W]
 	private double P_AGG_IDLE=0.80*P_AGG_PEAK; 			// Idle aggregation swithc power [w]
 	
-	
 	private double maxCPU[];							
 	private double maxMEMORY[];						// Total amount of volatile memory in servers [B]
 	private double maxDISK[];							// Total amount of mass memory in servers [B]
@@ -37,11 +36,6 @@ public class VMProblem extends Problem{
 	private double RACK_LINK_CAPACITY[];
 	private double serverBWconstraint;
 	private double rackBWconstraint;
-	
-	/*
-	 * Obiettivi. Accumulatori di quantità di
-	 * risorse sprecate tra tutti i server
-	 */
 	private double serverCPUconstraint;
 	private double serverMEMconstraint;
 	private double serverDISKconstraint;
@@ -50,14 +44,13 @@ public class VMProblem extends Problem{
 	private int violatedMEMconstraint;
 	private int violatedDISKconstraint;
 	
-	private boolean excessObj;
-	private boolean maxAusiliaryObj;
 	private boolean minAusiliaryObj;
+	private boolean maxAusiliaryObj;
 	ArrayList<VM>vm;
 	ServerAllocation[] serverAllocation;
 	
 	public VMProblem(int task, int server, int servOnRack, int rackOnPod, ArrayList<VM> vm,int instance){
-		numberOfObjectives_ = 2;
+		numberOfObjectives_ = 5;
 		numberOfConstraints_ =0;// 2+3*server;
 		problemName_ = "VMProblem";
 		solutionType_ = new IntSolutionType(this);
@@ -117,21 +110,19 @@ public class VMProblem extends Problem{
 		violatedMEMconstraint=0;
 		violatedDISKconstraint=0;
 		
-		/* */
-		minAusiliaryObj=false; 
-		/* */
 		if(instance==0){
-			excessObj=false;
+			minAusiliaryObj=false;
 			maxAusiliaryObj=false;
 			
 		}else if(instance==1){
-			excessObj=true;
+			minAusiliaryObj=false;
+			maxAusiliaryObj=true;
 			numberOfObjectives_+=3;
 		}else if(instance==2){
+			minAusiliaryObj=true;
 			maxAusiliaryObj=true;
-			excessObj=true;
-			numberOfObjectives_+=3+3;
-		}
+			numberOfObjectives_+= 3 + 3;
+		}		
 	}
 	
 	public int sgn(double x) {
@@ -140,7 +131,10 @@ public class VMProblem extends Problem{
 	
 	@Override
 	public void evaluate(Solution solution) throws JMException {
-	
+		//TO BE DONE: Memory constraint to be implemented.
+		
+		
+		
 		
 		Variable[] var = solution.getDecisionVariables();
 		int varnum=var.length;
@@ -240,9 +234,6 @@ public class VMProblem extends Problem{
 		double maxExcess=-1;
 		double totalPowerConsumption=0;
 		
-		/*
-		 * Cpu,Ram and Disk "Makespan" equivalent
-		 */
 		double maxCpuUsage=-1;
 		double maxRamUsage=-1;
 		double maxDiskUsage=-1;
@@ -296,6 +287,24 @@ public class VMProblem extends Problem{
 				}
 
 			}//END MAX AUSILIARY OBJ
+			
+			
+			//START MIN AUSILIARY OBJ
+			if (minAusiliaryObj) {
+
+				if (currentCpu < minCpuUsage) {
+					minCpuUsage = currentCpu;
+				}
+
+				if (currentMem  < minRamUsage) {
+					minRamUsage = currentMem ;
+				}
+
+				if (currentDisk < minDiskUsage) {
+					minDiskUsage = currentDisk;
+				}
+			}
+			//END MIN AUSILIARY OBJ
 
 			//// Fitness Function 1
 			/*if(maxExecutionTime < serverExecutionTime[i]){
@@ -318,14 +327,14 @@ public class VMProblem extends Problem{
 		solution.setObjective(0,maxExcess);
 		solution.setObjective(1,excess_counter);
 		int i=2;
-		if(excessObj){
+	
 		solution.setObjective(i, serverCPUconstraint);
 		i++;
 		solution.setObjective(i, serverMEMconstraint);
 		i++;
 		solution.setObjective(i, serverDISKconstraint);
 		i++;
-		}
+		
 		//double max=Math.max(Math.max(serverCPUconstraint, serverMEMconstraint),serverDISKconstraint);
 		
 		//solution.setObjective(0, totalPowerConsumption);
