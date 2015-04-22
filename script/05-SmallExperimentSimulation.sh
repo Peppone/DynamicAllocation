@@ -4,9 +4,10 @@ if [ $# -lt 3 ]; then
     exit 1
 fi
 
-BINPATH="/home/peppone/workspace/JMetalVM/bin"
-INPUT="/home/peppone/workspace/JMetalVM/input"
-OUTPUT="/home/peppone/workspace/JMetalVM/output"
+BINPATH="/home/portaluri/workspace/DynamicAllocation/bin"
+INPUT="/home/portaluri/workspace/DynamicAllocation/input"
+OUTPUT="/home/portaluri/workspace/DynamicAllocation/output"
+CPLEX="/home/portaluri/opl/MultiBinPackaging"
 SERVPERRACK=24
 RACKPERPOD=8
 FEASIBLE=""
@@ -48,9 +49,9 @@ fi
 	if [ "$1" = "true" -o "$1" = "t" ]
 	then
 #La stringa di sotto modifica brutalmente il sorgente model.mod. Quando viene trovata una stringa del tipo int vm = ed altro, viene sosituita
-		perl -pi -e 's/int vm[\s]* = [\d]*;/int vm  = '$VM';/g' /home/peppone/opl/MultiBinPackaging/model.mod
-		echo "server = $SERVER;" > /home/peppone/opl/MultiBinPackaging/server.dat;
-		oplrun /home/peppone/opl/MultiBinPackaging/model.mod /home/peppone/opl/MultiBinPackaging/input/cpu$VM.dat /home/peppone/opl/MultiBinPackaging/input/disk$VM.dat /home/peppone/opl/MultiBinPackaging/input/mem$VM.dat /home/peppone/opl/MultiBinPackaging/server.dat | tee "$OUTPUT/CPLEX.$VM.$SERVER"
+		perl -pi -e 's/int vm[\s]* = [\d]*;/int vm  = '$VM';/g' $CPLEX/model.mod
+		echo "server = $SERVER;" > $CPLEX/server.dat;
+		oplrun $CPLEX/model.mod $CPLEX/input/cpu$VM.dat $CPLEX/input/disk$VM.dat $CPLEX/input/mem$VM.dat $CPLEX/server.dat | tee "$OUTPUT/CPLEX.$VM.$SERVER"
 	fi
 	#Esegue la parte jMetal
 	if [ "$2" = "true" -o "$2" = "t" ]

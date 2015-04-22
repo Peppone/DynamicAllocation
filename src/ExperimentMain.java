@@ -29,6 +29,7 @@ int task;
 int server;
 int serverPerRack;
 int rackPerPod;
+State initialState;
 public void problemSetup(String args[]) throws IOException{
 	
 	task=Integer.parseInt(args[0]);
@@ -52,16 +53,18 @@ public void problemSetup(String args[]) throws IOException{
 		for(int i=0;i<arg2.length;++i){
 		
 			Problem problem;
-			State state = new EmptyState(task,server,serverPerRack,rackPerPod);
 			try {
-				if(arg0.startsWith("VMProblem0")){
-					problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, 0,state);
-				}else if(arg0.startsWith("VMProblem1")){
-						problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, 1,state);
-				}else if(arg0.startsWith("VMProblem2")){
-					problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, 2,state);
-				}else{
-					problem=null;
+				if (arg0.startsWith("VMProblem0")) {
+					problem = new VMProblem(task, server, serverPerRack,
+							rackPerPod, vm, 0, initialState);
+				} else if (arg0.startsWith("VMProblem1")) {
+					problem = new VMProblem(task, server, serverPerRack,
+							rackPerPod, vm, 1, initialState);
+				} else if (arg0.startsWith("VMProblem2")) {
+					problem = new VMProblem(task, server, serverPerRack,
+							rackPerPod, vm, 2, initialState);
+				} else {
+					problem = null;
 				}
 				
 				JVMSettings settings = new JVMSettings(arg0,problem);;
@@ -75,8 +78,11 @@ public void problemSetup(String args[]) throws IOException{
 	public static void main(String args[]) throws JMException, IOException{
 		//TODO Actually timeFile is useless
 		
-		if(args.length<11){
-			System.err.println("Usage: program_name vm_num serv_num servOnRack rackOnPod timefile cpufile memfile diskfile bwfile numberOfExperiments typeOfExperiments");
+		if(args.length<14){
+			System.err.println("Usage: program_name 0)vm_num 1)serv_num 2)servOnRack"
+					+ "3)rackOnPod 4)timefile 5)cpufile 6)memfile 7)diskfile"
+					+ "8)bwfile 9)numberOfExperiments 10)typeOfExperiments"
+					+ "11)vmAllocationFile 12)servBWAllocationFile 13)rackBWAllocationFile");
 			System.err.println("Number of args passed "+args.length);
 			return;
 		}
@@ -88,8 +94,10 @@ public void problemSetup(String args[]) throws IOException{
 		int server=Integer.parseInt(args[1]);
 		int serverPerRack=Integer.parseInt(args[2]);
 		int rackPerPod=Integer.parseInt(args[3]);
+		File servBW = new File (args[12]);
+		File rackBW = new File (args[13]);
 		me.experimentName_="VMProblem"+task+"."+server;
-		me.experimentBaseDirectory_="/home/peppone/workspace/JMetalVM/output";
+		me.experimentBaseDirectory_="/home/portaluri/workspace/DynamicAllocation/output";
 		String algorithm="";
 		switch(type){
 		case 0: algorithm="NSGA100"; break;
@@ -106,7 +114,7 @@ public void problemSetup(String args[]) throws IOException{
 		for(int i=0;i<me.problemList_.length;++i){
 			me.problemList_[i]="VMProblem"+i+"."+task+"."+server;
 		}
-		String outputDir="/home/peppone/workspace/JMetalVM/output";
+		String outputDir="/home/portaluri/workspace/DynamicAllocation/output";
 		me.paretoFrontDirectory_=outputDir;
 		me.paretoFrontFile_=new String[]{"FUN0","FUN1","FUN2"};
 		me.indicatorList_=new String[]{"HV" , "SPREAD" , "IGD" , "EPSILON"};

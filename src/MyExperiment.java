@@ -51,7 +51,7 @@ public void problemSetup(String args[]) throws IOException{
 		for(int i=0;i<arg2.length;++i){
 		
 			Problem problem;
-			State state = new EmptyState(task,server,serverPerRack,rackPerPod);
+			State state = new EmptyState(server,serverPerRack,rackPerPod);
 			try {
 				if(arg0.startsWith("VMProblem0")){
 					problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, 0,state);
@@ -88,13 +88,13 @@ public void problemSetup(String args[]) throws IOException{
 		//int serverPerRack=Integer.parseInt(args[2]);
 		//int rackPerPod=Integer.parseInt(args[3]);
 		me.experimentName_="VMProblem"+task+"."+server;
-		me.experimentBaseDirectory_="/home/peppone/workspace/JMetalVM/output";
+		me.experimentBaseDirectory_="/home/portaluri/workspace/DynamicAllocation/output";
 		me.algorithmNameList_= new String[]{"NSGA100","NSGA1000","NSGAVIT", "NSGA09", "NSGA095","NSGA05"};
 		me.problemList_=new String [3];
 		for(int i=0;i<me.problemList_.length;++i){
 			me.problemList_[i]="VMProblem"+i+"."+task+"."+server;
 		}
-		me.paretoFrontDirectory_="/home/peppone/workspace/JMetalVM/output";
+		me.paretoFrontDirectory_="/home/portaluri/workspace/DynamicAllocation/output";
 		me.paretoFrontFile_=new String[]{"FUN0","FUN1","FUN2"};
 		me.indicatorList_=new String[]{"HV" , "SPREAD" , "IGD" , "EPSILON"};
 		me.problemSetup(args);

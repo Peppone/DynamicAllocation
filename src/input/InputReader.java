@@ -10,30 +10,39 @@ public class InputReader {
 		
 	
 	public static State readState(File vmAllocation,
-			File bwStats, File commonData){
+			File servBWAllocation, File rackBWAllocation, int server,int serverPerRack, int rackPerPod){
+		if(vmAllocation==null){
+			return new EmptyState(server,serverPerRack,rackPerPod);
+		}
 		if (!vmAllocation.exists()){
 			System.err.println("File "+vmAllocation.getName()
 					+" does not exist");
 			return null;
 		}
-		if (!bwStats.exists()){
-			System.err.println("File "+bwStats.getName()+
+		if (!servBWAllocation.exists()){
+			System.err.println("File "+servBWAllocation.getName()+
 					" does not exist");
 			return null;
 		}
 		
-		if (!commonData.exists()){
-			System.err.println("File "+commonData.getName()+
+		if (!rackBWAllocation.exists()){
+			System.err.println("File "+rackBWAllocation.getName()+
 					" does not exist");
 			return null;
 		}
-		int server=readCommonData(commonData);
+		
 		double vmStats[][]=readVMStat(vmAllocation,server);
-		
+		int rack = server % serverPerRack == 0 ? server / serverPerRack
+				: server / serverPerRack + 1;
+		double bwStats[][] = readBWStat(servBWAllocation, rackBWAllocation,
+				server, rack);
 		//START - DEBUG
 			InputReader.printMatrix(vmStats);
 		//END - DEBUG
-		
+		State state= new State(server, serverPerRack, rackPerPod);
+		state.setServResource(vmStats);
+		state.setServBW(bwStats[0]);
+		state.setRackBW(bwStats[1]);
 		return null;//new State();
 	}
 	private static double[][] readVMStat(File f,int server){
@@ -85,6 +94,54 @@ public class InputReader {
 		return occupancy;
 	}
 	
+	private static double[][] readBWStat(File serv, File rack, int server,
+			int tor) {
+		double [][] bw = new double [2][];
+		bw[0]=getBW(serv,server);
+		bw[1]=getBW(rack,tor);
+		//START - DEBUG
+		
+		
+		
+		//END - DEBUG
+		return bw;
+	}
+	
+	private static double[] getBW(File f, int param) {
+		double result[] = new double[param];
+		BufferedReader bf = null;
+		try {
+			bf = new BufferedReader(new FileReader(f));
+			String line;
+			while ((line = bf.readLine()) != null) {
+				String parameters[] = line.split("\\s+");
+				if (parameters.length != 2) {
+					System.err.println("Wrong parameter size,"
+							+ "file not well formatted" + "Expected 2, real "
+							+ parameters.length + "\n " + parameters[0]);
+					return null;
+				}
+				int actualServer = Integer.parseInt(parameters[0]);
+				result[actualServer] += Double.parseDouble(parameters[1]);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			result = null;
+		} finally {
+			try {
+				bf.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				result = null;
+			}
+		}
+
+		return result;
+
+	}
+	
 	private static void printMatrix(double v[][]){
 		for (int i =0;i< v.length;++i){
 			for (int j=0;j<v[i].length;++j){
@@ -92,39 +149,5 @@ public class InputReader {
 			}
 			System.out.println();
 		}
-	}
-	private static int readCommonData(File f){
-		int server=-1;
-		FileReader fr;
-		try {
-			fr = new FileReader(f);
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return -1;
-		}
-		BufferedReader br = new BufferedReader(fr);
-		try {
-			server = Integer.parseInt(br.readLine());
-		} catch (NumberFormatException | IOException e) {
-			e.printStackTrace();
-		}finally{
-			try {
-				br.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		return server;
-	}
-	
-	public static void main (String [] args){
-		File vmAllocation = new File ("/home/portaluri/workspace/"
-				+ "DynamicAllocation/input/vm.dat");
-		File bwStats=vmAllocation;
-		File commonData = new File("/home/portaluri/workspace/"
-				+ "DynamicAllocation/input/common.dat");
-		InputReader.readState(vmAllocation, bwStats, commonData);
 	}
 }

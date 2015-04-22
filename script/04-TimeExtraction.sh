@@ -1,7 +1,7 @@
 #!bin/sh
 SERVER=768
-OUTPUT="/home/peppone/workspace/JMetalVM/output/100-2000"
-RES="/home/peppone/workspace/JMetalVM/output/"
+OUTPUT="/home/portaluri/workspace/DynamicAllocation/output/100-2000"
+RES="/home/portaluri/workspace/DynamicAllocation/output"
 for i in `seq 2 3`; do
 if [ $i -eq 2 ]
 	then

@@ -113,7 +113,7 @@ public class Main extends NSGAII_main {
 		double[] disk=readVector(args[7]);
 		double [] bw= readVector(args[8]);
 		ArrayList <VM> vm=createVMList(time, cpu, mem, disk,bw);
-		State state = new EmptyState(task,server,serverPerRack,rackPerPod);
+		State state = new EmptyState(server,serverPerRack,rackPerPod);
 		problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, type,state);
 		indicators=new QualityIndicator(problem, outputPath+"FUN");
 		JVMSettings mySettings=new JVMSettings("VMProblem",problem);

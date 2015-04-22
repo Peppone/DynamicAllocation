@@ -1,5 +1,5 @@
 #!bin/sh
-GNUPLOT="/home/peppone/workspace/JMetalVM/script/gnuplot"
+GNUPLOT="/home/portaluri/workspace/DynamicAllocation/script/gnuplot"
 
 for i in `seq 1 3`;do
 	gnuplot $GNUPLOT/problem$i.gnuplot
