@@ -1,3 +1,5 @@
+import input.State;
+import input.EmptyState;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -50,13 +52,14 @@ public void problemSetup(String args[]) throws IOException{
 		for(int i=0;i<arg2.length;++i){
 		
 			Problem problem;
+			State state = new EmptyState(task,server,serverPerRack,rackPerPod);
 			try {
 				if(arg0.startsWith("VMProblem0")){
-					problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, 0);
+					problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, 0,state);
 				}else if(arg0.startsWith("VMProblem1")){
-						problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, 1);
+						problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, 1,state);
 				}else if(arg0.startsWith("VMProblem2")){
-					problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, 2);
+					problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, 2,state);
 				}else{
 					problem=null;
 				}

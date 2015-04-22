@@ -1,3 +1,6 @@
+import input.EmptyState;
+import input.State;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -84,9 +87,9 @@ public class Main extends NSGAII_main {
 		}
 		Problem problem; // The problem to solve
 		Algorithm algorithm; // The algorithm to use
-		Operator crossover; // Crossover operator
-		Operator mutation; // Mutation operator
-		Operator selection; // Selection operator
+//		Operator crossover; // Crossover operator
+//		Operator mutation; // Mutation operator
+//		Operator selection; // Selection operator
 		HashMap<String, Object> parameters = new HashMap<String, Object>();
 		
 		QualityIndicator indicators;
@@ -110,7 +113,8 @@ public class Main extends NSGAII_main {
 		double[] disk=readVector(args[7]);
 		double [] bw= readVector(args[8]);
 		ArrayList <VM> vm=createVMList(time, cpu, mem, disk,bw);
-		problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, type);
+		State state = new EmptyState(task,server,serverPerRack,rackPerPod);
+		problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, type,state);
 		indicators=new QualityIndicator(problem, outputPath+"FUN");
 		JVMSettings mySettings=new JVMSettings("VMProblem",problem);
 		//algorithm = Main.setup(problem);

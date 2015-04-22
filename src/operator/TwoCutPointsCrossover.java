@@ -36,7 +36,7 @@ public class TwoCutPointsCrossover extends Operator {
 	 *            The first parent
 	 * @param parent2
 	 *            The second parent
-	 * @return An array containig the two offsprings
+	 * @return An array containing the two offsprings
 	 * @throws JMException
 	 */
 	public Solution[] doCrossover(double probability, Solution parent1,

@@ -1,3 +1,6 @@
+import input.EmptyState;
+import input.State;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,13 +51,14 @@ public void problemSetup(String args[]) throws IOException{
 		for(int i=0;i<arg2.length;++i){
 		
 			Problem problem;
+			State state = new EmptyState(task,server,serverPerRack,rackPerPod);
 			try {
 				if(arg0.startsWith("VMProblem0")){
-					problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, 0);
+					problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, 0,state);
 				}else if(arg0.startsWith("VMProblem1")){
-						problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, 1);
+						problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, 1,state);
 				}else if(arg0.startsWith("VMProblem2")){
-					problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, 2);
+					problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, 2,state);
 				}else{
 					problem=null;
 				}
@@ -81,8 +85,8 @@ public void problemSetup(String args[]) throws IOException{
 		HashMap<String, Object> parameters = new HashMap<String, Object>();
 		int task=Integer.parseInt(args[0]);
 		int server=Integer.parseInt(args[1]);
-		int serverPerRack=Integer.parseInt(args[2]);
-		int rackPerPod=Integer.parseInt(args[3]);
+		//int serverPerRack=Integer.parseInt(args[2]);
+		//int rackPerPod=Integer.parseInt(args[3]);
 		me.experimentName_="VMProblem"+task+"."+server;
 		me.experimentBaseDirectory_="/home/peppone/workspace/JMetalVM/output";
 		me.algorithmNameList_= new String[]{"NSGA100","NSGA1000","NSGAVIT", "NSGA09", "NSGA095","NSGA05"};

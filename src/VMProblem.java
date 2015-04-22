@@ -1,3 +1,5 @@
+import input.State;
+
 import java.util.ArrayList;
 
 import jmetal.core.Problem;
@@ -11,7 +13,7 @@ import jmetal.util.JMException;
 public class VMProblem extends Problem{
 
 	/**
-	 * 
+	 * TODO Correlate constraints (BW) to initial state
 	 */
 	private static final long serialVersionUID = -4810592646779691595L;
 	private double P_S_PEAK[];							// Peak power of a generic CPU [W]
@@ -27,11 +29,11 @@ public class VMProblem extends Problem{
 	private double maxDISK[];							// Total amount of mass memory in servers [B]
 	
 	
-	public static int SERV_NUM;						// Number of servers
-	private static int SERV_ON_RACK;				// Number of servers in a rack
-	private static int RACK_NUM; 					// Number of racks
-	private static int RACK_ON_POD; 				// Number of racks in a pod
-	private static int POD_NUM ; 					// Number of pods
+	public int SERV_NUM;						// Number of servers
+	private int SERV_ON_RACK;				// Number of servers in a rack
+	private int RACK_NUM; 					// Number of racks
+	private int RACK_ON_POD; 				// Number of racks in a pod
+	private int POD_NUM ; 					// Number of pods
 	
 	private double SERVER_LINK_CAPACITY[];
 	private double RACK_LINK_CAPACITY[];
@@ -46,9 +48,9 @@ public class VMProblem extends Problem{
 	private double serverMEMconstraint;
 	private double serverDISKconstraint;
 	
-	private int violatedCPUconstraint;
-	private int violatedMEMconstraint;
-	private int violatedDISKconstraint;
+//	private int violatedCPUconstraint;
+//	private int violatedMEMconstraint;
+//	private int violatedDISKconstraint;
 	
 	private boolean excessObj;
 	private boolean maxAusiliaryObj;
@@ -56,7 +58,8 @@ public class VMProblem extends Problem{
 	ArrayList<VM>vm;
 	ServerAllocation[] serverAllocation;
 	
-	public VMProblem(int task, int server, int servOnRack, int rackOnPod, ArrayList<VM> vm,int instance){
+	public VMProblem(int task, int server, int servOnRack, int rackOnPod, ArrayList<VM> vm,
+			int instance, State initialState){
 		numberOfObjectives_ = 2;
 		numberOfConstraints_ =0;// 2+3*server;
 		problemName_ = "VMProblem";
@@ -71,6 +74,7 @@ public class VMProblem extends Problem{
 		lowerLimit_ = new double[numberOfVariables_];
 		this.vm = vm;
 		serverAllocation=new ServerAllocation[SERV_NUM];
+		//Solution space is delimited
 		for (int i = 0; i < numberOfVariables_; ++i) {
 
 			upperLimit_[i] = SERV_NUM-1;
@@ -86,7 +90,7 @@ public class VMProblem extends Problem{
 		maxDISK = new double[SERV_NUM];
 		RACK_LINK_CAPACITY= new double[RACK_NUM];
 		for(int i=0; i< SERV_NUM; ++i){
-			SERVER_LINK_CAPACITY[i]=1e9;
+			SERVER_LINK_CAPACITY[i]=1e9-initialState.getServerBWOccupancy(i);
 			P_S_PEAK[i]=300;
 			P_S_IDLE[i]=100;
 			
@@ -96,16 +100,16 @@ public class VMProblem extends Problem{
 			maxCPU[i]=2e9;
 			fine valori*/
 			//VALORI TEMPORANEI
-			maxMEMORY[i]=100;
-			maxDISK[i]= 100;
-			maxCPU[i]=100;
+			maxMEMORY[i]=100-initialState.getCpuOccupiedPercentage(i);
+			maxDISK[i]= 100 - initialState.getRamOccupiedPercentage(i);
+			maxCPU[i]=100 - initialState.getRamOccupiedPercentage(i);
 			//FINE VALORI
 			
 			serverAllocation[i]=new ServerAllocation(maxCPU[i],maxMEMORY[i],maxCPU[i]);
 			
 		}
 		for(int i=0; i< RACK_NUM; ++i){
-			RACK_LINK_CAPACITY[i]=20e9;
+			RACK_LINK_CAPACITY[i]=20e9-initialState.getRackBWOccupancy(i);
 		}
 		serverBWconstraint=0;
 		rackBWconstraint=0;
@@ -113,9 +117,9 @@ public class VMProblem extends Problem{
 		serverMEMconstraint=0;
 		serverDISKconstraint=0;
 		
-		violatedCPUconstraint=0;
-		violatedMEMconstraint=0;
-		violatedDISKconstraint=0;
+//		violatedCPUconstraint=0;
+//		violatedMEMconstraint=0;
+//		violatedDISKconstraint=0;
 		
 		/* */
 		minAusiliaryObj=false; 
@@ -146,7 +150,7 @@ public class VMProblem extends Problem{
 		int varnum=var.length;
 		double server_power_consumption = 0;
 		double switch_power_consumption=0;
-		double serverExecutionTime[]=new double [SERV_NUM];
+		//double serverExecutionTime[]=new double [SERV_NUM];
 		double bandwidth_per_server[] = new double[SERV_NUM];
 		double bandwidth_per_rack[] = new double[RACK_NUM];
 		double bandwidth_per_pod[] = new double[POD_NUM];
@@ -159,9 +163,9 @@ public class VMProblem extends Problem{
 		serverMEMconstraint=0;
 		serverDISKconstraint=0;
 		
-		violatedCPUconstraint=0;
-		violatedDISKconstraint=0;
-		violatedMEMconstraint=0;
+//		violatedCPUconstraint=0;
+//		violatedDISKconstraint=0;
+//		violatedMEMconstraint=0;
 		for(int i =0;i <SERV_NUM;++i){
 			serverAllocation[i].reset();
 		}
@@ -260,24 +264,24 @@ public class VMProblem extends Problem{
 			if(excess>maxExcess){
 				maxExcess=excess;
 			}
-			//Start constraint
-			if(serverAllocation[i].getCpuConstraint()>0){
-				serverCPUconstraint+=serverAllocation[i].getCpuConstraint();
-				violatedCPUconstraint++;
-			}
-			
-			if(serverAllocation[i].getMemConstraint()>0){
-				serverMEMconstraint+=serverAllocation[i].getMemConstraint();
-				violatedMEMconstraint++;
-			}
-			
-			if(serverAllocation[i].getDiskConstraint()>0){
-				serverDISKconstraint+=serverAllocation[i].getDiskConstraint();
-				violatedDISKconstraint++;
-			}
-			if(serverAllocation[i].getCpuConstraint()>0 || serverAllocation[i].getMemConstraint()>0 || serverAllocation[i].getDiskConstraint()>0)
-				excess_counter++;
-			//End constraint
+//			//Start constraint
+//			if(serverAllocation[i].getCpuConstraint()>0){
+//				serverCPUconstraint+=serverAllocation[i].getCpuConstraint();
+//				violatedCPUconstraint++;
+//			}
+//			
+//			if(serverAllocation[i].getMemConstraint()>0){
+//				serverMEMconstraint+=serverAllocation[i].getMemConstraint();
+//				violatedMEMconstraint++;
+//			}
+//			
+//			if(serverAllocation[i].getDiskConstraint()>0){
+//				serverDISKconstraint+=serverAllocation[i].getDiskConstraint();
+//				violatedDISKconstraint++;
+//			}
+//			if(serverAllocation[i].getCpuConstraint()>0 || serverAllocation[i].getMemConstraint()>0 || serverAllocation[i].getDiskConstraint()>0)
+//				excess_counter++;
+//			//End constraint
 			
 		//Objectives
 			//MAX AUSILIARY
@@ -328,7 +332,7 @@ public class VMProblem extends Problem{
 		}
 		//double max=Math.max(Math.max(serverCPUconstraint, serverMEMconstraint),serverDISKconstraint);
 		
-		//solution.setObjective(0, totalPowerConsumption);
+		solution.setObjective(2, totalPowerConsumption);
 		if(maxAusiliaryObj){
 				solution.setObjective(i, maxCpuUsage);
 				i++;
@@ -350,16 +354,16 @@ public class VMProblem extends Problem{
 			
 	}
 		public void evaluateConstraints(Solution solution) throws JMException {
-			/*
+			
 		int number_violated_constraints = 0;
-		number_violated_constraints+=violatedCPUconstraint+violatedDISKconstraint+violatedMEMconstraint;
-/*	if (serverBWconstraint > 0)
+		//number_violated_constraints+=violatedCPUconstraint+violatedDISKconstraint+violatedMEMconstraint;
+		if (serverBWconstraint > 0)
 			number_violated_constraints++;
 		if (rackBWconstraint > 0)
-			number_violated_constraints++;*/
-		solution.setOverallConstraintViolation(0/*rackBWconstraint
-				+ serverBWconstraint+serverMEMconstraint+serverCPUconstraint+serverDISKconstraint*/);
-		solution.setNumberOfViolatedConstraint(0/*number_violated_constraints*/);
+			number_violated_constraints++;
+		solution.setOverallConstraintViolation(rackBWconstraint
+				+ serverBWconstraint);
+		solution.setNumberOfViolatedConstraint(number_violated_constraints);
 		
 				
 	}
