@@ -1,5 +1,7 @@
+import input.InputReader;
 import input.State;
 import input.EmptyState;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -30,19 +32,29 @@ int server;
 int serverPerRack;
 int rackPerPod;
 State initialState;
-public void problemSetup(String args[]) throws IOException{
+public ExperimentMain (String args[]) throws IOException{
 	
 	task=Integer.parseInt(args[0]);
 	Double tempserver=Double.parseDouble(args[1]);
 	server=(int)Math.round(tempserver);
 	serverPerRack=Integer.parseInt(args[2]);
 	rackPerPod=Integer.parseInt(args[3]);
-	time = Main.readVector(args[4]);
-	cpu= Main.readVector(args[5]);
-	mem= Main.readVector(args[6]);
-	disk= Main.readVector(args[7]);
-	bw=  Main.readVector(args[8]);
-	vm= Main.createVMList(time, cpu, mem, disk,bw);
+	time = Setup.readVector(args[4]);
+	cpu=  Setup.readVector(args[5]);
+	mem=  Setup.readVector(args[6]);
+	disk=  Setup.readVector(args[7]);
+	bw=   Setup.readVector(args[8]);
+	vm=  Setup.createVMList(time, cpu, mem, disk,bw);
+	int serverPerRack=Integer.parseInt(args[2]);
+	int rackPerPod=Integer.parseInt(args[3]);
+	File servBW = new File (args[12]);
+	File rackBW = new File (args[13]);
+	File vmAllocation = new File (args[11]);
+	initialState = InputReader.readState(vmAllocation, servBW, rackBW,
+			server, serverPerRack, rackPerPod);
+	if (initialState==null){
+		System.out.println("NULL");
+	}
 	//problem = new VMProblem(task,server,serverPerRack,rackPerPod, vm, type);
 	
 	//return problem;
@@ -50,9 +62,11 @@ public void problemSetup(String args[]) throws IOException{
 	@Override
 	public void algorithmSettings(String arg0, int arg1, Algorithm[] arg2)
 			throws ClassNotFoundException {
+
 		for(int i=0;i<arg2.length;++i){
 		
 			Problem problem;
+			
 			try {
 				if (arg0.startsWith("VMProblem0")) {
 					problem = new VMProblem(task, server, serverPerRack,
@@ -87,17 +101,15 @@ public void problemSetup(String args[]) throws IOException{
 			return;
 		}
 		int numberOfIndipendentRuns=Integer.parseInt(args[9]);
-		MyExperiment me = new MyExperiment();
+		ExperimentMain me = new ExperimentMain(args);
 		int type=Integer.parseInt(args[10]);
 		HashMap<String, Object> parameters = new HashMap<String, Object>();
 		int task=Integer.parseInt(args[0]);
 		int server=Integer.parseInt(args[1]);
-		int serverPerRack=Integer.parseInt(args[2]);
-		int rackPerPod=Integer.parseInt(args[3]);
-		File servBW = new File (args[12]);
-		File rackBW = new File (args[13]);
+		
 		me.experimentName_="VMProblem"+task+"."+server;
 		me.experimentBaseDirectory_="/home/portaluri/workspace/DynamicAllocation/output";
+		
 		String algorithm="";
 		switch(type){
 		case 0: algorithm="NSGA100"; break;
@@ -118,12 +130,12 @@ public void problemSetup(String args[]) throws IOException{
 		me.paretoFrontDirectory_=outputDir;
 		me.paretoFrontFile_=new String[]{"FUN0","FUN1","FUN2"};
 		me.indicatorList_=new String[]{"HV" , "SPREAD" , "IGD" , "EPSILON"};
-		me.problemSetup(args);
+		//me.problemSetup(args);
 		parameters.put("serverNumber", server);
 		//me.algorithmSettings_=settings;
 		me.independentRuns_=numberOfIndipendentRuns;
 		me.initExperiment();
-		int numberOfThreads=3;
+		int numberOfThreads=2;
 		long initTime = System.nanoTime();
 		me.runExperiment(numberOfThreads);
 		long finishTime=System.nanoTime()-initTime;
@@ -135,8 +147,8 @@ public void problemSetup(String args[]) throws IOException{
 		results.append("Total Time[s]\t"+(double)finishTime/1e9+"\n");
 		results.append("Avg Time[s]\t"+(double)finishTime/me.independentRuns_*1e9+"\n");
 		results.close();
-		me.generateQualityIndicators();
-		me.generateLatexTables();
+//		me.generateQualityIndicators();
+//		me.generateLatexTables();
 		int rows;
 		int columns;
 		String prefix;
@@ -145,12 +157,12 @@ public void problemSetup(String args[]) throws IOException{
 		columns=3;
 		prefix = new String("Problems");
 		problems= me.problemList_;
-		me.generateRBoxplotScripts(rows, columns, problems, prefix, true, me);
-		me.generateRWilcoxonScripts(problems, prefix, me);
-		Friedman test= new Friedman(me);
-		test.executeTest("EPSILON");
-		test.executeTest("HV");
-		test.executeTest("SPREAD");
+//		me.generateRBoxplotScripts(rows, columns, problems, prefix, true, me);
+//		me.generateRWilcoxonScripts(problems, prefix, me);
+//		Friedman test= new Friedman(me);
+//		test.executeTest("EPSILON");
+//		test.executeTest("HV");
+//		test.executeTest("SPREAD");
 		
 		
 	}

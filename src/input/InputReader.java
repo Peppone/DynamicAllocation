@@ -43,7 +43,7 @@ public class InputReader {
 		state.setServResource(vmStats);
 		state.setServBW(bwStats[0]);
 		state.setRackBW(bwStats[1]);
-		return null;//new State();
+		return state;
 	}
 	private static double[][] readVMStat(File f,int server){
 		/*
@@ -67,8 +67,8 @@ public class InputReader {
 			while((line=bf.readLine())!=null){
 				String parameters [] = line.split("\\s+");
 				if (parameters.length != 4){
-					System.err.println("Wrong parameter size,"
-							+ "file not well formatted"
+					System.err.println("Wrong VM parameter size,"
+							+ "file not well formatted\n"
 							+"Expected 4, real "+parameters.length+"\n "+parameters[0]);
 					return null;
 				}
@@ -116,8 +116,8 @@ public class InputReader {
 			while ((line = bf.readLine()) != null) {
 				String parameters[] = line.split("\\s+");
 				if (parameters.length != 2) {
-					System.err.println("Wrong parameter size,"
-							+ "file not well formatted" + "Expected 2, real "
+					System.err.println("Wrong BW parameter size,"
+							+ "file not well formatted" + "\nExpected 2, real "
 							+ parameters.length + "\n " + parameters[0]);
 					return null;
 				}

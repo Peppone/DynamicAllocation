@@ -60,7 +60,7 @@ public class VMProblem extends Problem{
 	
 	public VMProblem(int task, int server, int servOnRack, int rackOnPod, ArrayList<VM> vm,
 			int instance, State initialState){
-		numberOfObjectives_ = 2;
+		numberOfObjectives_ = 3;
 		numberOfConstraints_ =0;// 2+3*server;
 		problemName_ = "VMProblem";
 		solutionType_ = new IntSolutionType(this);
@@ -166,6 +166,7 @@ public class VMProblem extends Problem{
 //		violatedCPUconstraint=0;
 //		violatedDISKconstraint=0;
 //		violatedMEMconstraint=0;
+		
 		for(int i =0;i <SERV_NUM;++i){
 			serverAllocation[i].reset();
 		}
@@ -264,24 +265,24 @@ public class VMProblem extends Problem{
 			if(excess>maxExcess){
 				maxExcess=excess;
 			}
-//			//Start constraint
-//			if(serverAllocation[i].getCpuConstraint()>0){
-//				serverCPUconstraint+=serverAllocation[i].getCpuConstraint();
+			//Start constraint
+			if(serverAllocation[i].getCpuConstraint()>0){
+				serverCPUconstraint+=serverAllocation[i].getCpuConstraint();
 //				violatedCPUconstraint++;
-//			}
-//			
-//			if(serverAllocation[i].getMemConstraint()>0){
-//				serverMEMconstraint+=serverAllocation[i].getMemConstraint();
+			}
+			
+			if(serverAllocation[i].getMemConstraint()>0){
+				serverMEMconstraint+=serverAllocation[i].getMemConstraint();
 //				violatedMEMconstraint++;
-//			}
-//			
-//			if(serverAllocation[i].getDiskConstraint()>0){
-//				serverDISKconstraint+=serverAllocation[i].getDiskConstraint();
+			}
+			
+			if(serverAllocation[i].getDiskConstraint()>0){
+				serverDISKconstraint+=serverAllocation[i].getDiskConstraint();
 //				violatedDISKconstraint++;
-//			}
-//			if(serverAllocation[i].getCpuConstraint()>0 || serverAllocation[i].getMemConstraint()>0 || serverAllocation[i].getDiskConstraint()>0)
-//				excess_counter++;
-//			//End constraint
+			}
+			if(serverAllocation[i].getCpuConstraint()>0 || serverAllocation[i].getMemConstraint()>0 || serverAllocation[i].getDiskConstraint()>0)
+				excess_counter++;
+			//End constraint
 			
 		//Objectives
 			//MAX AUSILIARY
@@ -356,7 +357,6 @@ public class VMProblem extends Problem{
 		public void evaluateConstraints(Solution solution) throws JMException {
 			
 		int number_violated_constraints = 0;
-		//number_violated_constraints+=violatedCPUconstraint+violatedDISKconstraint+violatedMEMconstraint;
 		if (serverBWconstraint > 0)
 			number_violated_constraints++;
 		if (rackBWconstraint > 0)

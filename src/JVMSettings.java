@@ -62,10 +62,8 @@ public class JVMSettings extends Settings {
 		algorithm.addOperator("mutation", mutation);
 		algorithm.setInputParameter("populationSize",populationSize);
 		algorithm.setInputParameter("maxEvaluations", evaluations);
-		//crossover = new UniformCrossover(parameters);
 		crossover= new TwoCutPointsCrossover (parameters);
 		algorithm.addOperator("crossover", crossover);
-		//parameters = null;
 		selection = SelectionFactory.getSelectionOperator("BinaryTournament",
 				parameters);
 		algorithm.addOperator("selection", selection);
